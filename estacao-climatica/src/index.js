@@ -2,16 +2,43 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import React from "react";
 import ReactDOM from "react-dom";
 
+import { EstacaoClimatica } from "./EstacaoClimatica";
+
+
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      latitude: null,
-      longitude: null,
-      estacao: null,
-      data: null,
-      icone: null,
-    };
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     latitude: null,
+  //     longitude: null,
+  //     estacao: null,
+  //     data: null,
+  //     icone: null,
+  //     mensagemDeErro: null,
+  //   };
+  // }
+  state = {
+    latitude: null,
+    longitude: null,
+    estacao: null,
+    data: null,
+    icone: null,
+    mensagemDeErro: null,
+  };
+
+  timer = null;
+  componentDidMount() {
+    console.log("componentDidMount");
+    this.timer = setInterval(() => {
+      this.setState({ data: new Date().toLocaleTimeString() });
+    }, 1000);
+  }
+  componentWillUnmount() {
+    console.log("componentWillUnmount");
+    clearInterval(this.timer);
+  }
+  componentDidUpdate() {
+    console.log("componentDidUpdate");
   }
 
   obterEstacao = (data, latitude) => {
@@ -51,53 +78,50 @@ class App extends React.Component {
   };
 
   obterLocalizacao = () => {
-    window.navigator.geolocation.getCurrentPosition((posicao) => {
-      let data = new Date();
-      let estacao = this.obterEstacao(data, posicao.coords.latitude);
-      let icone = this.icones[estacao];
-      console.log(icone);
-      this.setState({
-        latitude: posicao.coords.latitude,
-        longitude: posicao.coords.longitude,
-        estacao: estacao,
-        data: data.toLocaleTimeString(),
-        icone: icone,
-      });
-    });
+    window.navigator.geolocation.getCurrentPosition(
+      (posicao) => {
+        let data = new Date();
+        let estacao = this.obterEstacao(data, posicao.coords.latitude);
+        let icone = this.icones[estacao];
+        console.log(icone);
+        this.setState({
+          latitude: posicao.coords.latitude,
+          longitude: posicao.coords.longitude,
+          estacao: estacao,
+          data: data.toLocaleTimeString(),
+          icone: icone,
+        });
+      },
+      (erro) => {
+        console.log(erro);
+        this.setState({ mensagemDeErro: `Tente novamente mais tarde` });
+      }
+    );
   };
 
   render() {
+    console.log("App inicial");
+    console.log(this.state);
     return (
       <div>
         <div className="container mt-2">
           <div className="row justify-content-center">
             <div className="col-md-8">
-              <div className="card">
-                <div className="card-body">
-                  <div
-                    className="d-flex align-items-center border rounded mb-2"
-                    style={{ height: "6rem" }}
-                  >
-                    <i className={`fas fa-5x ${this.state.icone}`}></i>
-                    <p className="w-75 ms-3 text center fs-1">
-                      {this.state.estacao}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-center">
-                    {this.state.latitude
-                      ? `Coordenadas: ${this.state.latitude}, ${this.state.longitude}. Data: ${this.state.data}`
-                      : "Clique no botão para saber sua estação climática"}
-                  </p>
-                </div>
-                <button
-                  onClick={this.obterLocalizacao}
-                  className="btn btn-outline-primary w-100 mt-2"
-                >
-                  Qual minha estação?
-                </button>
-              </div>
+              {this.state.mensagemDeErro ? (
+                <p className="border rounded p-2 fs-1 text-center">
+                  É preciso dar permissão para acesso à localização. Atualize a
+                  página e tente de novo, ajustando a configuração no seu
+                  navegador.
+                </p>
+              ) : (
+                <EstacaoClimatica
+                  icone={this.state.icone}
+                  estacao={this.state.estacao}
+                  latitude={this.state.latitude}
+                  longitude={this.state.longitude}
+                  obterLocalizacao={this.obterLocalizacao}
+                />
+              )}
             </div>
           </div>
         </div>
