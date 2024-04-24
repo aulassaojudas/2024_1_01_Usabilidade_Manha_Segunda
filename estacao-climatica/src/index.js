@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import { EstacaoClimatica } from "./EstacaoClimatica";
-
+import Loading from './Loading'
 
 class App extends React.Component {
   // constructor(props) {
@@ -24,21 +24,23 @@ class App extends React.Component {
     data: null,
     icone: null,
     mensagemDeErro: null,
+    mostrar: false
   };
 
   timer = null;
   componentDidMount() {
+    this.obterLocalizacao()
     console.log("componentDidMount");
-    this.timer = setInterval(() => {
-      this.setState({ data: new Date().toLocaleTimeString() });
-    }, 1000);
+    //this.timer = setInterval(() => {
+    //  this.setState({ data: new Date().toLocaleTimeString() });
+    //}, 1000);
   }
   componentWillUnmount() {
     console.log("componentWillUnmount");
     clearInterval(this.timer);
   }
   componentDidUpdate() {
-    console.log("componentDidUpdate");
+    console.log("componentDidUpdate App", this.state.mostrar);
   }
 
   obterEstacao = (data, latitude) => {
@@ -84,6 +86,7 @@ class App extends React.Component {
         let estacao = this.obterEstacao(data, posicao.coords.latitude);
         let icone = this.icones[estacao];
         console.log(icone);
+        console.log("Chamou a localização")
         this.setState({
           latitude: posicao.coords.latitude,
           longitude: posicao.coords.longitude,
@@ -99,6 +102,11 @@ class App extends React.Component {
     );
   };
 
+  mostrarCoordenadas = () => {
+    this.setState({mostrar: true})
+    console.log("Chamou o mostrarCoordenadas.")
+  }
+
   render() {
     console.log("App inicial");
     console.log(this.state);
@@ -107,20 +115,26 @@ class App extends React.Component {
         <div className="container mt-2">
           <div className="row justify-content-center">
             <div className="col-md-8">
-              {this.state.mensagemDeErro ? (
-                <p className="border rounded p-2 fs-1 text-center">
-                  É preciso dar permissão para acesso à localização. Atualize a
-                  página e tente de novo, ajustando a configuração no seu
-                  navegador.
-                </p>
-              ) : (
-                <EstacaoClimatica
-                  icone={this.state.icone}
-                  estacao={this.state.estacao}
-                  latitude={this.state.latitude}
-                  longitude={this.state.longitude}
-                  obterLocalizacao={this.obterLocalizacao}
-                />
+              {
+                (!this.state.latitude && !this.state.mensagemDeErro)?
+                  <Loading mensagem='Por favor, responda à solicitação de localização.'/>
+                :
+                  this.state.mensagemDeErro ? (
+                  <p className="border rounded p-2 fs-1 text-center">
+                    É preciso dar permissão para acesso à localização. Atualize a
+                    página e tente de novo, ajustando a configuração no seu
+                    navegador.
+                  </p>
+                ) : (
+                  <EstacaoClimatica
+                    icone={this.state.icone}
+                    estacao={this.state.estacao}
+                    latitude={this.state.latitude}
+                    longitude={this.state.longitude}
+                    obterLocalizacao={this.obterLocalizacao}
+                    mostrarCoordenadas={this.mostrarCoordenadas}
+                    mostrar={this.state.mostrar}
+                  />
               )}
             </div>
           </div>
