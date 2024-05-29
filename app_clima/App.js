@@ -1,10 +1,18 @@
 import React, { useState } from "react";
 import { Button, FlatList, StyleSheet, TextInput, View, Text } from "react-native";
+import PrevisaoItem from "./components/PrevisaoItem";
+import {API_KEY} from '@env'
+//crie o arquivo .env na mesma pasta que o App.js e coloque lá
+//API_KEY=sua_chave_de_api
+//sem aspas e sem espaço entre o sinal de igual, o nome da chave e
+//o conteúdo
+//configure o babel.config.js conforme o que está aqui no projeto
+//instale o react-native-dotenv com o npm install
 
 export default function App() {
   const endpoint =
     "https://api.openweathermap.org/data/2.5/forecast?lang=pt_br&units=metric&q=";
-  const apiKey = "aqui vai a chave de api";
+  const apiKey = `${API_KEY}`;
   const [cidade, setCidade] = useState("");
   const capturarCidade = (cidade) => {
     setCidade(cidade);
@@ -18,7 +26,7 @@ export default function App() {
     .then((dados) => {
       setPrevisoes(dados['list'])
       Keyboard.dismiss()
-    })
+    }).catch((err) => console.log(err))
   }
   return (
     <View style={styles.container}>
@@ -38,7 +46,7 @@ export default function App() {
         data={previsoes}
         renderItem={
           previsao => (
-            <Text>{JSON.stringify(previsao)}</Text>
+            <PrevisaoItem previsao={previsao}/>
           )
         }
         />
@@ -49,6 +57,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     padding: 40,
+    paddingTop: 60,
     flexDirection: "column",
     flex: 1,
     backgroundColor: "#fff",
